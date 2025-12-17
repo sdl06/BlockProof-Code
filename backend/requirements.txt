@@ -1,0 +1,33 @@
+Django==4.2.7
+djangorestframework==3.14.0
+web3==6.11.3
+celery==5.3.4
+redis==5.0.1
+python-dotenv==1.0.0
+django-cors-headers==4.3.1
+django-environ==0.11.2
+requests==2.31.0  # For IPFS uploads via Pinata and OCR.space API
+
+# Testing dependencies
+pytest==7.4.3
+pytest-django==4.7.0
+pytest-mock==3.12.0
+pytest-cov==4.1.0
+freezegun==1.2.2  # For time mocking
+# Optional: For advanced OCR and hologram detection
+# pytesseract==0.3.10  # Tesseract OCR wrapper (requires Tesseract installed)
+# opencv-python==4.8.1.78  # For image processing and hologram detection
+
+# Database (optional - only needed for PostgreSQL)
+# psycopg2-binary==2.9.9  # Comment out if you get build errors, SQLite works fine for development
+
+# Zero-Knowledge Proof dependencies (optional - can skip if build fails)
+# py-ecc==6.0.0  # Optional
+cryptography==41.0.7
+# pycryptodome==3.19.0  # Optional, cryptography provides most functionality
+# pysha3==1.0.2  # Optional, can use hashlib.sha3_256 instead
+
+# Optional: For advanced zk-SNARKs (requires Node.js and circom)
+# These are used via subprocess calls
+# nodejs and circom must be installed separately
+

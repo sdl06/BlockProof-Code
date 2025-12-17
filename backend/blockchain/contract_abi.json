@@ -1,0 +1,875 @@
+[
+    {
+        "inputs":  [
+
+                   ],
+        "stateMutability":  "nonpayable",
+        "type":  "constructor"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "ContractPaused",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "uint256",
+                           "name":  "credentialId",
+                           "type":  "uint256"
+                       }
+                   ],
+        "name":  "CredentialNotFound",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "uint256",
+                           "name":  "credentialId",
+                           "type":  "uint256"
+                       }
+                   ],
+        "name":  "CredentialRevokedAlready",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "bytes32",
+                           "name":  "fingerprint",
+                           "type":  "bytes32"
+                       }
+                   ],
+        "name":  "FingerprintAlreadyUsed",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "institution",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "InstitutionInactive",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "institution",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "InstitutionNotFound",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "InvalidFingerprint",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "InvalidInstitution",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "InvalidStudentWallet",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "InvalidSuperAdminCandidate",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "NotRegistrar",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "NotSuperAdmin",
+        "type":  "error"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "institution",
+                           "type":  "address"
+                       },
+                       {
+                           "internalType":  "address",
+                           "name":  "sender",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "UnauthorizedController",
+        "type":  "error"
+    },
+    {
+        "anonymous":  false,
+        "inputs":  [
+                       {
+                           "indexed":  true,
+                           "internalType":  "uint256",
+                           "name":  "credentialId",
+                           "type":  "uint256"
+                       },
+                       {
+                           "indexed":  true,
+                           "internalType":  "address",
+                           "name":  "studentWallet",
+                           "type":  "address"
+                       },
+                       {
+                           "indexed":  true,
+                           "internalType":  "address",
+                           "name":  "institution",
+                           "type":  "address"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "bytes32",
+                           "name":  "fingerprint",
+                           "type":  "bytes32"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "string",
+                           "name":  "metadataURI",
+                           "type":  "string"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "string",
+                           "name":  "encryptedPayloadURI",
+                           "type":  "string"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "uint64",
+                           "name":  "expiresAt",
+                           "type":  "uint64"
+                       }
+                   ],
+        "name":  "CredentialIssued",
+        "type":  "event"
+    },
+    {
+        "anonymous":  false,
+        "inputs":  [
+                       {
+                           "indexed":  true,
+                           "internalType":  "uint256",
+                           "name":  "credentialId",
+                           "type":  "uint256"
+                       },
+                       {
+                           "indexed":  true,
+                           "internalType":  "address",
+                           "name":  "revokedBy",
+                           "type":  "address"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "bytes32",
+                           "name":  "reasonHash",
+                           "type":  "bytes32"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "uint64",
+                           "name":  "revokedAt",
+                           "type":  "uint64"
+                       }
+                   ],
+        "name":  "CredentialRevoked",
+        "type":  "event"
+    },
+    {
+        "anonymous":  false,
+        "inputs":  [
+                       {
+                           "indexed":  true,
+                           "internalType":  "address",
+                           "name":  "institution",
+                           "type":  "address"
+                       },
+                       {
+                           "indexed":  true,
+                           "internalType":  "address",
+                           "name":  "controller",
+                           "type":  "address"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "bool",
+                           "name":  "allowed",
+                           "type":  "bool"
+                       }
+                   ],
+        "name":  "InstitutionControllerUpdated",
+        "type":  "event"
+    },
+    {
+        "anonymous":  false,
+        "inputs":  [
+                       {
+                           "indexed":  true,
+                           "internalType":  "address",
+                           "name":  "institution",
+                           "type":  "address"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "string",
+                           "name":  "name",
+                           "type":  "string"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "bool",
+                           "name":  "isActive",
+                           "type":  "bool"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "uint64",
+                           "name":  "timestamp",
+                           "type":  "uint64"
+                       }
+                   ],
+        "name":  "InstitutionUpserted",
+        "type":  "event"
+    },
+    {
+        "anonymous":  false,
+        "inputs":  [
+                       {
+                           "indexed":  false,
+                           "internalType":  "bool",
+                           "name":  "isPaused",
+                           "type":  "bool"
+                       },
+                       {
+                           "indexed":  true,
+                           "internalType":  "address",
+                           "name":  "triggeredBy",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "PausedStateChanged",
+        "type":  "event"
+    },
+    {
+        "anonymous":  false,
+        "inputs":  [
+                       {
+                           "indexed":  true,
+                           "internalType":  "address",
+                           "name":  "registrar",
+                           "type":  "address"
+                       },
+                       {
+                           "indexed":  false,
+                           "internalType":  "bool",
+                           "name":  "allowed",
+                           "type":  "bool"
+                       }
+                   ],
+        "name":  "RegistrarUpdated",
+        "type":  "event"
+    },
+    {
+        "anonymous":  false,
+        "inputs":  [
+                       {
+                           "indexed":  true,
+                           "internalType":  "address",
+                           "name":  "newAdmin",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "SuperAdminUpdated",
+        "type":  "event"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "acceptSuperAdmin",
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "institution",
+                           "type":  "address"
+                       },
+                       {
+                           "internalType":  "address",
+                           "name":  "controller",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "canIssueForInstitution",
+        "outputs":  [
+                        {
+                            "internalType":  "bool",
+                            "name":  "",
+                            "type":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "credentialCount",
+        "outputs":  [
+                        {
+                            "internalType":  "uint256",
+                            "name":  "",
+                            "type":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "uint256",
+                           "name":  "credentialId",
+                           "type":  "uint256"
+                       }
+                   ],
+        "name":  "credentialStatus",
+        "outputs":  [
+                        {
+                            "components":  [
+                                               {
+                                                   "internalType":  "bool",
+                                                   "name":  "exists",
+                                                   "type":  "bool"
+                                               },
+                                               {
+                                                   "internalType":  "bool",
+                                                   "name":  "valid",
+                                                   "type":  "bool"
+                                               },
+                                               {
+                                                   "internalType":  "bool",
+                                                   "name":  "revoked",
+                                                   "type":  "bool"
+                                               },
+                                               {
+                                                   "internalType":  "bytes32",
+                                                   "name":  "fingerprint",
+                                                   "type":  "bytes32"
+                                               },
+                                               {
+                                                   "internalType":  "address",
+                                                   "name":  "studentWallet",
+                                                   "type":  "address"
+                                               },
+                                               {
+                                                   "internalType":  "address",
+                                                   "name":  "institution",
+                                                   "type":  "address"
+                                               },
+                                               {
+                                                   "internalType":  "uint64",
+                                                   "name":  "issuedAt",
+                                                   "type":  "uint64"
+                                               },
+                                               {
+                                                   "internalType":  "uint64",
+                                                   "name":  "expiresAt",
+                                                   "type":  "uint64"
+                                               },
+                                               {
+                                                   "internalType":  "uint64",
+                                                   "name":  "revokedAt",
+                                                   "type":  "uint64"
+                                               }
+                                           ],
+                            "internalType":  "struct BlockProofCredentialVault.CredentialStatus",
+                            "name":  "",
+                            "type":  "tuple"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "bytes32",
+                           "name":  "",
+                           "type":  "bytes32"
+                       }
+                   ],
+        "name":  "fingerprintUsed",
+        "outputs":  [
+                        {
+                            "internalType":  "bool",
+                            "name":  "",
+                            "type":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "uint256",
+                           "name":  "credentialId",
+                           "type":  "uint256"
+                       }
+                   ],
+        "name":  "getCredential",
+        "outputs":  [
+                        {
+                            "components":  [
+                                               {
+                                                   "internalType":  "uint256",
+                                                   "name":  "id",
+                                                   "type":  "uint256"
+                                               },
+                                               {
+                                                   "internalType":  "address",
+                                                   "name":  "studentWallet",
+                                                   "type":  "address"
+                                               },
+                                               {
+                                                   "internalType":  "address",
+                                                   "name":  "institution",
+                                                   "type":  "address"
+                                               },
+                                               {
+                                                   "internalType":  "bytes32",
+                                                   "name":  "fingerprint",
+                                                   "type":  "bytes32"
+                                               },
+                                               {
+                                                   "internalType":  "string",
+                                                   "name":  "metadataURI",
+                                                   "type":  "string"
+                                               },
+                                               {
+                                                   "internalType":  "string",
+                                                   "name":  "encryptedPayloadURI",
+                                                   "type":  "string"
+                                               },
+                                               {
+                                                   "internalType":  "uint64",
+                                                   "name":  "issuedAt",
+                                                   "type":  "uint64"
+                                               },
+                                               {
+                                                   "internalType":  "uint64",
+                                                   "name":  "expiresAt",
+                                                   "type":  "uint64"
+                                               },
+                                               {
+                                                   "internalType":  "uint64",
+                                                   "name":  "revokedAt",
+                                                   "type":  "uint64"
+                                               },
+                                               {
+                                                   "internalType":  "bytes32",
+                                                   "name":  "revocationReasonHash",
+                                                   "type":  "bytes32"
+                                               },
+                                               {
+                                                   "internalType":  "bool",
+                                                   "name":  "revoked",
+                                                   "type":  "bool"
+                                               }
+                                           ],
+                            "internalType":  "struct BlockProofCredentialVault.Credential",
+                            "name":  "",
+                            "type":  "tuple"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "institution",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "getInstitution",
+        "outputs":  [
+                        {
+                            "components":  [
+                                               {
+                                                   "internalType":  "string",
+                                                   "name":  "name",
+                                                   "type":  "string"
+                                               },
+                                               {
+                                                   "internalType":  "bool",
+                                                   "name":  "exists",
+                                                   "type":  "bool"
+                                               },
+                                               {
+                                                   "internalType":  "bool",
+                                                   "name":  "isActive",
+                                                   "type":  "bool"
+                                               },
+                                               {
+                                                   "internalType":  "uint64",
+                                                   "name":  "createdAt",
+                                                   "type":  "uint64"
+                                               },
+                                               {
+                                                   "internalType":  "uint64",
+                                                   "name":  "lastUpdatedAt",
+                                                   "type":  "uint64"
+                                               }
+                                           ],
+                            "internalType":  "struct BlockProofCredentialVault.Institution",
+                            "name":  "",
+                            "type":  "tuple"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "institution",
+                           "type":  "address"
+                       },
+                       {
+                           "internalType":  "address",
+                           "name":  "controller",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "isController",
+        "outputs":  [
+                        {
+                            "internalType":  "bool",
+                            "name":  "",
+                            "type":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "components":  [
+                                              {
+                                                  "internalType":  "address",
+                                                  "name":  "institution",
+                                                  "type":  "address"
+                                              },
+                                              {
+                                                  "internalType":  "address",
+                                                  "name":  "studentWallet",
+                                                  "type":  "address"
+                                              },
+                                              {
+                                                  "internalType":  "bytes32",
+                                                  "name":  "fingerprint",
+                                                  "type":  "bytes32"
+                                              },
+                                              {
+                                                  "internalType":  "string",
+                                                  "name":  "metadataURI",
+                                                  "type":  "string"
+                                              },
+                                              {
+                                                  "internalType":  "string",
+                                                  "name":  "encryptedPayloadURI",
+                                                  "type":  "string"
+                                              },
+                                              {
+                                                  "internalType":  "uint64",
+                                                  "name":  "expiresAt",
+                                                  "type":  "uint64"
+                                              }
+                                          ],
+                           "internalType":  "struct BlockProofCredentialVault.IssueCredentialRequest",
+                           "name":  "request",
+                           "type":  "tuple"
+                       }
+                   ],
+        "name":  "issueCredential",
+        "outputs":  [
+                        {
+                            "internalType":  "uint256",
+                            "name":  "newCredentialId",
+                            "type":  "uint256"
+                        }
+                    ],
+        "stateMutability":  "nonpayable",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "paused",
+        "outputs":  [
+                        {
+                            "internalType":  "bool",
+                            "name":  "",
+                            "type":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "pendingSuperAdmin",
+        "outputs":  [
+                        {
+                            "internalType":  "address",
+                            "name":  "",
+                            "type":  "address"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "registrars",
+        "outputs":  [
+                        {
+                            "internalType":  "bool",
+                            "name":  "",
+                            "type":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "uint256",
+                           "name":  "credentialId",
+                           "type":  "uint256"
+                       },
+                       {
+                           "internalType":  "bytes32",
+                           "name":  "reasonHash",
+                           "type":  "bytes32"
+                       }
+                   ],
+        "name":  "revokeCredential",
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "institution",
+                           "type":  "address"
+                       },
+                       {
+                           "internalType":  "address",
+                           "name":  "controller",
+                           "type":  "address"
+                       },
+                       {
+                           "internalType":  "bool",
+                           "name":  "allowed",
+                           "type":  "bool"
+                       }
+                   ],
+        "name":  "setInstitutionController",
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "bool",
+                           "name":  "value",
+                           "type":  "bool"
+                       }
+                   ],
+        "name":  "setPaused",
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "registrar",
+                           "type":  "address"
+                       },
+                       {
+                           "internalType":  "bool",
+                           "name":  "allowed",
+                           "type":  "bool"
+                       }
+                   ],
+        "name":  "setRegistrar",
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "studentWallet",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "studentCredentialIds",
+        "outputs":  [
+                        {
+                            "internalType":  "uint256[]",
+                            "name":  "",
+                            "type":  "uint256[]"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+
+                   ],
+        "name":  "superAdmin",
+        "outputs":  [
+                        {
+                            "internalType":  "address",
+                            "name":  "",
+                            "type":  "address"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "newAdmin",
+                           "type":  "address"
+                       }
+                   ],
+        "name":  "transferSuperAdmin",
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "address",
+                           "name":  "institution",
+                           "type":  "address"
+                       },
+                       {
+                           "internalType":  "string",
+                           "name":  "name",
+                           "type":  "string"
+                       },
+                       {
+                           "internalType":  "bool",
+                           "name":  "isActive",
+                           "type":  "bool"
+                       }
+                   ],
+        "name":  "upsertInstitution",
+        "outputs":  [
+
+                    ],
+        "stateMutability":  "nonpayable",
+        "type":  "function"
+    },
+    {
+        "inputs":  [
+                       {
+                           "internalType":  "uint256",
+                           "name":  "credentialId",
+                           "type":  "uint256"
+                       },
+                       {
+                           "internalType":  "bytes32",
+                           "name":  "fingerprint",
+                           "type":  "bytes32"
+                       }
+                   ],
+        "name":  "verifyFingerprint",
+        "outputs":  [
+                        {
+                            "internalType":  "bool",
+                            "name":  "",
+                            "type":  "bool"
+                        }
+                    ],
+        "stateMutability":  "view",
+        "type":  "function"
+    }
+]
