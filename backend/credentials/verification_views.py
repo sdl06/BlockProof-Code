@@ -43,9 +43,55 @@ def verify_from_link(request, credential_id, fingerprint):
     # Try to get from cache first
     try:
         credential = Credential.objects.get(credential_id=credential_id_int)
-        credential_fp = credential.fingerprint.lower().replace('0x', '')
         
-        if credential_fp == fingerprint_clean:
+        # SECURITY: Recompute fingerprint from cached data and verify against blockchain
+        # This prevents cache tampering attacks
+        document_service = get_document_service()
+        
+        # Recompute fingerprint from cached credential data
+        recomputed_fingerprint = document_service.generate_credential_fingerprint(
+            file_hash=credential.diploma_file_hash or '',
+            institution_address=credential.institution.address,
+            student_wallet=credential.student_wallet,
+            student_name=credential.student_name or '',
+            passport_number=credential.passport_number or '',
+            degree_type=credential.degree_type or '',
+            graduation_year=credential.graduation_year or 0,
+            issued_at=credential.issued_at
+        )
+        recomputed_fp_clean = recomputed_fingerprint.lower().replace('0x', '')
+        
+        # Get on-chain fingerprint (source of truth)
+        service = get_blockproof_service()
+        on_chain_fingerprint = None
+        if service and service.contract:
+            try:
+                status_data = service.get_credential_status(credential_id_int)
+                if status_data and status_data.get('fingerprint'):
+                    on_chain_fingerprint = status_data['fingerprint'].lower().replace('0x', '')
+            except Exception as e:
+                logger.warning(f"Could not fetch on-chain fingerprint: {e}")
+        
+        # Verify: Compare recomputed fingerprint with on-chain fingerprint
+        fingerprint_valid = False
+        if on_chain_fingerprint:
+            # Compare recomputed fingerprint with blockchain (source of truth)
+            fingerprint_valid = (recomputed_fp_clean == on_chain_fingerprint)
+            if not fingerprint_valid:
+                logger.warning(
+                    f"Fingerprint mismatch for credential {credential_id_int}: "
+                    f"recomputed={recomputed_fingerprint}, on_chain={status_data.get('fingerprint')}"
+                )
+        else:
+            # Fallback: Compare with URL fingerprint if blockchain unavailable
+            credential_fp = credential.fingerprint.lower().replace('0x', '')
+            fingerprint_valid = (credential_fp == fingerprint_clean)
+            logger.warning(f"Blockchain unavailable, using cache comparison for credential {credential_id_int}")
+        
+        # Also verify URL fingerprint matches
+        url_fingerprint_match = (recomputed_fp_clean == fingerprint_clean)
+        
+        if fingerprint_valid and url_fingerprint_match:
             # Fingerprint matches - check validity
             is_valid = credential.is_valid()
             degree_photo_url = None
@@ -71,7 +117,9 @@ def verify_from_link(request, credential_id, fingerprint):
                 'degree_type': credential.degree_type,
                 'graduation_year': credential.graduation_year,
                 'degree_photo_url': degree_photo_url,
-                'source': 'cache'
+                'source': 'cache',
+                'fingerprint_verified': True,
+                'on_chain_verified': on_chain_fingerprint is not None
             })
         else:
             # Fingerprint doesn't match - TAMPERED
@@ -79,9 +127,11 @@ def verify_from_link(request, credential_id, fingerprint):
                 'status': 'TAMPERED',
                 'credential_id': credential_id_int,
                 'fingerprint_match': False,
-                'message': 'Fingerprint does not match. Document may have been tampered with.',
-                'expected_fingerprint': credential.fingerprint,
+                'message': 'Fingerprint verification failed. Cache data may have been tampered with or does not match blockchain.',
+                'recomputed_fingerprint': '0x' + recomputed_fp_clean,
+                'on_chain_fingerprint': '0x' + on_chain_fingerprint if on_chain_fingerprint else None,
                 'provided_fingerprint': '0x' + fingerprint_clean,
+                'cached_fingerprint': credential.fingerprint,
                 'source': 'cache'
             }, status=status.HTTP_200_OK)
             
@@ -191,6 +241,7 @@ def verify_uploaded_document(request):
             {'error': 'Credential not found'},
             status=status.HTTP_404_NOT_FOUND
         )
+
 
 
 

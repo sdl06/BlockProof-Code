@@ -246,3 +246,4 @@ cat out/BlockProofCredentialVault.sol/BlockProofCredentialVault.json | jq .abi >
 
 
 
+
