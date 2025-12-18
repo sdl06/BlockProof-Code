@@ -72,10 +72,17 @@ class DocumentService:
         fp_hex = fingerprint_bytes.hex()
         return fp_hex if fp_hex.startswith('0x') else ('0x' + fp_hex)
     
-    def check_holograph_ocr(self, file: UploadedFile) -> Dict[str, Any]:
+    def check_holograph_ocr(self, file: UploadedFile, strict: bool = False) -> Dict[str, Any]:
         """
         Check for holograph/security features in the document.
         This helps detect fraud by verifying document authenticity.
+        
+        Args:
+            file: Uploaded file to check
+            strict: If True, requires OCR extraction to pass. Raises ValueError if fails.
+        
+        Returns:
+            Dict with verification results. If strict=True and verification fails, raises ValueError.
         
         Options for integration:
         1. OCR.space API (FREE: 25K requests/month) - https://ocr.space/ocrapi
@@ -93,21 +100,27 @@ class DocumentService:
             'file_size': file_size,
             'file_type': file.content_type,
             'has_holograph_features': False,  # Placeholder - integrate service
-            'ocr_extracted': False,  # Placeholder - integrate OCR service
+            'ocr_extracted': False,
             'authenticity_score': 0.0,  # Placeholder
             'warnings': [],
             'service_used': 'placeholder',
+            'verified': False,
         }
         
         # Basic validation
         if file_size > 10 * 1024 * 1024:  # 10MB limit
             checks['warnings'].append('File size exceeds recommended limit')
+            if strict:
+                raise ValueError('File size exceeds 10MB limit')
         
         if file.content_type not in ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg']:
             checks['warnings'].append(f'Unsupported file type: {file.content_type}')
+            if strict:
+                raise ValueError(f'Unsupported file type: {file.content_type}')
         
         # OCR.space API integration (free tier: 25K/month)
         # Using helper function that matches OCR.space documentation exactly
+        ocr_success = False
         try:
             import tempfile
             from .ocr_helpers import ocr_space_file
@@ -139,14 +152,17 @@ class DocumentService:
                 parsed_result = ocr_result['ParsedResults'][0]
                 parsed_text = parsed_result.get('ParsedText', '').strip()
                 
-                if parsed_text:
+                if parsed_text and len(parsed_text) > 10:  # Require at least 10 characters
                     checks['ocr_extracted'] = True
                     checks['ocr_text'] = parsed_text
                     checks['ocr_confidence'] = True  # OCR.space doesn't provide confidence in free tier
                     checks['service_used'] = 'ocr.space'
+                    checks['verified'] = True
+                    ocr_success = True
                     logger.info(f"OCR.space extracted {len(parsed_text)} chars from {file.name}")
                 else:
-                    logger.warning(f"OCR.space returned empty text for {file.name}")
+                    logger.warning(f"OCR.space returned insufficient text for {file.name}")
+                    checks['warnings'].append('OCR extracted insufficient text (possible fake/blank document)')
             elif ocr_result.get('ErrorMessage'):
                 error_msg = ocr_result.get('ErrorMessage')
                 checks['warnings'].append(f"OCR error: {error_msg}")
@@ -158,13 +174,21 @@ class DocumentService:
             logger.warning(f"OCR.space integration failed: {e}", exc_info=True)
             checks['warnings'].append(f"OCR processing failed: {str(e)}")
         
+        # Strict mode: require OCR success
+        if strict and not ocr_success:
+            raise ValueError(
+                f"Hologram OCR verification failed. "
+                f"Could not extract sufficient text from document. "
+                f"Warnings: {', '.join(checks.get('warnings', []))}"
+            )
+        
         # TODO: Integrate hologram detection
         # Options:
         # 1. Arya.ai Hologram Detection API (paid)
         # 2. Custom OpenCV-based detection (see HOLOGRAPH_OCR_OPTIONS.md)
         # 3. Veryfi Fraud Detection (paid, min $500/month)
         
-        logger.info(f"Holograph OCR check for file: {file.name} (service: {checks['service_used']})")
+        logger.info(f"Holograph OCR check for file: {file.name} (service: {checks['service_used']}, verified: {checks['verified']})")
         
         return checks
     
@@ -205,6 +229,9 @@ class DocumentService:
 def get_document_service() -> DocumentService:
     """Get the document service instance."""
     return DocumentService()
+
+
+
 
 
 

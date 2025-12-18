@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Credential
+from .models import Credential, StudentVerificationRequest
 from institutions.serializers import InstitutionSerializer
 import re
 from django.core.files.uploadedfile import UploadedFile
@@ -67,8 +67,9 @@ class CredentialSerializer(serializers.ModelSerializer):
 
 class CredentialIssueRequestSerializer(serializers.Serializer):
     """Serializer for issuing new credentials."""
-    institution_address = serializers.CharField(max_length=42)
-    institution_name = serializers.CharField(max_length=200)
+    # Institution fields are now optional - will use authenticated institution's data
+    institution_address = serializers.CharField(max_length=42, required=False, allow_blank=True)
+    institution_name = serializers.CharField(max_length=200, required=False, allow_blank=True)
     # Student wallet is no longer user-supplied (we derive it from passport number for the toy app)
     student_wallet = serializers.CharField(max_length=42, required=False, allow_blank=True)
     
@@ -87,4 +88,34 @@ class CredentialIssueRequestSerializer(serializers.Serializer):
     encrypted_payload_uri = IPFSOrURLField(required=False, allow_blank=True)
     
     expires_at = serializers.IntegerField(required=False, allow_null=True)
+
+
+class StudentVerificationRequestSerializer(serializers.ModelSerializer):
+    """Serializer for student verification requests."""
+    
+    class Meta:
+        model = StudentVerificationRequest
+        fields = [
+            'id',
+            'student_name',
+            'passport_number',
+            'student_wallet',
+            'degree_type',
+            'graduation_date',
+            'diploma_file',
+            'status',
+            'hologram_verified',
+            'share_link',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'status', 'hologram_verified', 'share_link', 'created_at', 'updated_at']
+    
+    def validate_student_wallet(self, value):
+        """Validate wallet address format."""
+        if value and not value.startswith('0x'):
+            raise serializers.ValidationError("Wallet address must start with '0x'")
+        if value and len(value) != 42:
+            raise serializers.ValidationError("Wallet address must be 42 characters (including 0x)")
+        return value
 

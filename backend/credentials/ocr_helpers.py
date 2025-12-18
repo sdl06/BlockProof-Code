@@ -72,3 +72,6 @@ def ocr_space_url(url, overlay=False, api_key='helloworld', language='eng'):
 
 
 
+
+
+

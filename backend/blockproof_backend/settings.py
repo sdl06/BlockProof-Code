@@ -19,7 +19,18 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # Security
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-change-in-production')
 DEBUG = env('DEBUG', default=False)
+
+# Allow common dev hosts (incl. Django test client "testserver") even if ALLOWED_HOSTS
+# isn't set in the environment. Keep env override for production safety.
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
+if DEBUG:
+    ALLOWED_HOSTS = list({
+        *ALLOWED_HOSTS,
+        '0.0.0.0',
+        'testserver',
+        'localhost',
+        '127.0.0.1',
+    })
 
 # Application definition
 INSTALLED_APPS = [
@@ -44,6 +55,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'institutions.middleware.RequestLoggingMiddleware',  # Add request logging
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -108,6 +120,13 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',  # Default to allow any, override per-view
+    ],
     'URL_FORMAT_OVERRIDE': None,  # Disable format suffixes to prevent converter conflicts
 }
 
@@ -129,7 +148,7 @@ else:
     CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
-CORS_ALLOW_HEADERS = ['Content-Type', 'Authorization', 'X-CSRFToken']
+CORS_ALLOW_HEADERS = ['Content-Type', 'Authorization', 'X-CSRFToken', 'Accept']
 
 # Blockchain Configuration - COST OPTIMIZATION SETTINGS
 BLOCKCHAIN_CONFIG = {
@@ -191,6 +210,25 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'institutions': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'rest_framework.authentication': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.contrib.auth': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
     },
 }
-
